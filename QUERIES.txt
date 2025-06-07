@@ -1,0 +1,137 @@
+QUERIES
+
+CREATE TABLE Customer (
+    cust_id INT PRIMARY KEY AUTO_INCREMENT,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50),
+    email VARCHAR(100) UNIQUE NOT NULL,
+    phone VARCHAR(15)
+);
+
+CREATE TABLE Address (
+    address_id INT PRIMARY KEY AUTO_INCREMENT,
+    cust_id INT NOT NULL,
+    apart_no VARCHAR(20),
+    street_name VARCHAR(100) NOT NULL,
+    city VARCHAR(50) NOT NULL,
+    state VARCHAR(50) NOT NULL,
+    pincode VARCHAR(10) NOT NULL,
+    FOREIGN KEY (cust_id) REFERENCES Customer(cust_id) ON DELETE CASCADE
+);
+
+CREATE TABLE Product (
+    prod_id INT PRIMARY KEY AUTO_INCREMENT,
+    prod_name VARCHAR(100) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    stock INT NOT NULL CHECK (stock >= 0)
+);
+
+CREATE TABLE Cart (
+    cust_id INT NOT NULL,
+    prod_id INT NOT NULL,
+    total DECIMAL(10, 2) NOT NULL,
+    PRIMARY KEY (cust_id, prod_id),
+    FOREIGN KEY (cust_id) REFERENCES Customer(cust_id) ON DELETE CASCADE,
+    FOREIGN KEY (prod_id) REFERENCES Product(prod_id)
+);
+
+CREATE TABLE Orders (
+    order_id INT PRIMARY KEY AUTO_INCREMENT,
+    cust_id INT NOT NULL,
+    order_date DATE NOT NULL,
+    order_amount DECIMAL(10, 2) NOT NULL,
+    ship_date DATE,
+    FOREIGN KEY (cust_id) REFERENCES Customer(cust_id)
+);
+
+CREATE TABLE Status (
+    order_id INT PRIMARY KEY,
+    status VARCHAR(50) NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES Orders(order_id)
+);
+
+CREATE TABLE Payment_mode (
+    order_id INT PRIMARY KEY,
+    payment_mode VARCHAR(50) NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES Orders(order_id)
+);
+
+ 1. Trigger: Prevent Add to Cart if Stock is 
+DELIMITER $$
+
+CREATE TRIGGER check_stock_before_insert
+BEFORE INSERT ON Cart
+FOR EACH ROW
+BEGIN
+    DECLARE current_stock INT;
+
+    SELECT stock INTO current_stock FROM Product WHERE prod_id = NEW.prod_id;
+
+    IF current_stock = 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Cannot add to cart. Product is out of stock.';
+    END IF;
+END $$
+
+DELIMITER ;
+
+2. Trigger: Decrease Stock When Order is Placed
+DELIMITER $$
+
+CREATE TRIGGER reduce_stock_after_order
+AFTER INSERT ON Orders
+FOR EACH ROW
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE cart_prod_id INT;
+    DECLARE cart_total DECIMAL(10, 2);
+    DECLARE cur CURSOR FOR SELECT prod_id FROM Cart WHERE cust_id = NEW.cust_id;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    OPEN cur;
+    read_loop: LOOP
+        FETCH cur INTO cart_prod_id;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        UPDATE Product
+        SET stock = stock - 1
+        WHERE prod_id = cart_prod_id;
+    END LOOP;
+
+    CLOSE cur;
+END $$
+
+DELIMITER ;
+
+3. Trigger: Delete Cart After Order
+DELIMITER $$
+
+CREATE TRIGGER clear_cart_after_order
+AFTER INSERT ON Orders
+FOR EACH ROW
+BEGIN
+    DELETE FROM Cart WHERE cust_id = NEW.cust_id;
+END $$
+
+DELIMITER ;
+
+4. Trigger: Prevent Ordering if Cart is Empty
+DELIMITER $$
+
+CREATE TRIGGER prevent_empty_order
+BEFORE INSERT ON Orders
+FOR EACH ROW
+BEGIN
+    DECLARE cart_count INT;
+
+    SELECT COUNT(*) INTO cart_count FROM Cart WHERE cust_id = NEW.cust_id;
+
+    IF cart_count = 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Cannot place order. Cart is empty.';
+    END IF;
+END $$
+
+DELIMITER ;

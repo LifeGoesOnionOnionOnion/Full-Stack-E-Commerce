@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Summary</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        p {
+            margin: 15px 0;
+            color: #34495e;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        strong {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+
+        li {
+            color: #34495e;
+        }
+    </style>
+</head>
+<body>
+    <h2>Order Confirmed!</h2>
+    <p><strong>Name:</strong> {{ name[0] }} {{ name[1] }}</p>
+
+    <p><strong>Shipping Address:</strong></p>
+    <ul>
+        <li>{{ address[2] }}, {{ address[3] }}</li>
+        <li>{{ address[4] }}, {{ address[5] }} - {{ address[6] }}</li>
+    </ul>
+
+    <p><strong>Payment Mode:</strong> {{ payment_mode }}</p>
+    <p><strong>Total Amount:</strong> ₹{{ total }}</p>
+    <p><strong>Order Date:</strong> {{ order_date }}</p>
+    <p><strong>Estimated Arrival:</strong> {{ ship_date }}</p>
+    <p><strong>Status:</strong> Pending</p>
+    <form action="{{ url_for('index') }}">
+        <button type="Log in" class="back-button">Back to Login</button>
+    </form>
+</body>
+</html>
