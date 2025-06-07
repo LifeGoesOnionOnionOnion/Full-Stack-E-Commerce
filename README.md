@@ -27,27 +27,27 @@ This is a fully functional e-commerce website project implemented using Flask an
 
 ## Schema Diagram
 
-![scheme_diagram](image.png)
+![scheme_diagram](Images/image.png)
 
 ## Relational Schema
 
-![relnal_schema](image-1.png)
+![relnal_schema](Images/image-1.png)
 
 ## Results
 
-![Login](image-2.png)
+![Login](Images/image-2.png)
 
-![Registration](image-3.png)
+![Registration](Images/image-3.png)
 
-![Shop](image-4.png)
+![Shop](Images/image-4.png)
 
-![Cart](image-5.png)
+![Cart](Images/image-5.png)
 
-![Cart_error](image-6.png)
+![Cart_error](Images/image-6.png)
 
-![address](image-7.png)
+![address](Images/image-7.png)
 
-![Confirmation](image-8.png)
+![Confirmation](Images/image-8.png)
 
 ## Future Improvements
 
